@@ -16,6 +16,22 @@ Resources:
               - sts:AssumeRole
       Path: /
       Policies:
+        - PolicyName: ecr-upload-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:BatchGetImage
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:CompleteLayerUpload
+                  - ecr:GetAuthorizationToken
+                  - ecr:InitiateLayerUpload
+                  - ecr:PutImage
+                  - ecr:UploadLayerPart
+                Resource:
+                  - "*"
         - PolicyName: log-stream-policy
           PolicyDocument:
             Version: 2012-10-17
@@ -39,11 +55,14 @@ Resources:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/standard:7.0
+        PrivilegedMode: true
         EnvironmentVariables:
           - Name: AWS_DEFAULT_REGION
             Value: !Ref AWS::Region
           - Name: AWS_ACCOUNT_ID
             Value: !Ref AWS::AccountId
+          - Name: IMAGE_URI
+            Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/test_takabatake_ecr_repo:latest
       Source:
         Type: GITHUB
         Location: "https://github.com/SGA-Yosuke-Takabatake/CodebuildTest.git"
